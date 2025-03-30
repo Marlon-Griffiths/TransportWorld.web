@@ -1,0 +1,25 @@
+﻿@model TransportWorldSystem.Web.Models.DriversViewModel
+
+<h1>@Model.Title</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Rating</th>
+            <th>Vehicle</th>
+            <th>Experience (Years)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var driver in Model.DriversList)
+        {
+            <tr>
+                <td>@driver.Name</td>
+                <td>@driver.Rating</td>
+                <td>@driver.Vehicle</td>
+                <td>@driver.ExperienceYears</td>
+            </tr>
+        }
+    </tbody>
+</table>
