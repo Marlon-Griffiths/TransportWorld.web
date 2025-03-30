@@ -1,0 +1,36 @@
+﻿@model TransportWorldSystem.Web.Models.AboutUsViewModel
+
+<h1>About Us</h1>
+
+<section>
+    <h2>Company History</h2>
+    <p>@Model.CompanyHistory</p>
+</section>
+
+<section>
+    <h2>Mission Statement</h2>
+    <p>@Model.MissionStatement</p>
+</section>
+
+<section>
+    <h2>Core Values</h2>
+    <ul>
+        @foreach (var value in Model.CoreValues)
+        {
+            <li>@value</li>
+        }
+    </ul>
+</section>
+
+<section>
+    <h2>Leadership Team</h2>
+    <ul>
+        @foreach (var leader in Model.LeadershipTeam)
+        {
+            <li>
+                <strong>@leader.Name</strong> - @leader.Role
+                <p>@leader.Bio</p>
+            </li>
+        }
+    </ul>
+</section>
