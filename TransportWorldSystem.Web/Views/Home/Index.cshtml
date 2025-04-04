@@ -2,112 +2,55 @@
     ViewData["Title"] = "Home Page";
 }
 
+<div id="clock" style="text-align: right; font-weight: bold; margin-bottom: 10px;"></div>
+
+<script>
+    function updateClock() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString();
+        document.getElementById('clock').textContent = timeString;
+    }
+
+    setInterval(updateClock, 1000);
+    updateClock();
+</script>
+
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="alert alert-danger">@ViewBag.ErrorMessage</div>
+}
+
 <div style="display: flex; justify-content: space-between; align-items: center;">
-    <!-- Ride Request Form -->
     <div style="width: 40%; padding: 20px; border: 1px solid #ddd; border-radius: 8px; box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); font-family: Arial, sans-serif;">
         <h2 style="text-align: center; font-weight: bold;">Request a Ride</h2>
-        <form id="rideForm" method="post" action="@Url.Action("RequestRide", "Home")">
-            <div style="margin-bottom: 15px;">
-                <label for="pickupLocation"><strong>Pickup Location</strong></label>
-                <select id="pickupLocation" name="PickupLocation" class="form-control" required>
+        <form method="post" action="@Url.Action("RequestRide", "Home")">
+            <div class="form-group">
+                <label><strong>Pickup Location</strong></label>
+                <select name="PickupLocation" class="form-control" required>
                     <option value="Cross Roads">Cross Roads</option>
                     <option value="Downtown">Downtown</option>
                     <option value="Halfway Tree">Halfway Tree</option>
                 </select>
             </div>
 
-            <div style="margin-bottom: 15px;">
-                <label for="dropoffLocation"><strong>Dropoff Location</strong></label>
-                <select id="dropoffLocation" name="DropoffLocation" class="form-control" required>
+            <div class="form-group">
+                <label><strong>Dropoff Location</strong></label>
+                <select name="DropoffLocation" class="form-control" required>
                     <option value="Cross Roads">Cross Roads</option>
                     <option value="Downtown">Downtown</option>
                     <option value="Halfway Tree">Halfway Tree</option>
                 </select>
             </div>
 
-            <div style="margin-bottom: 15px;">
-                <label for="rideType"><strong>Ride Type</strong></label>
-                <select id="rideType" name="RideType" class="form-control">
+            <div class="form-group">
+                <label><strong>Ride Type</strong></label>
+                <select name="RideType" class="form-control">
                     <option value="Normal">Normal Ride</option>
                     <option value="Premium">Premium Ride</option>
                 </select>
             </div>
 
-            <button type="button" class="btn btn-primary" style="width: 100%; font-size: 16px;" onclick="updateMap()">Find Ride</button>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Find Ride</button>
         </form>
-
-        <!-- Fare, Distance & Driver Info -->
-        <div id="fareInfo" style="margin-top: 15px; font-size: 16px; font-weight: bold; text-align: center;"></div>
-        <div id="distanceInfo" style="font-size: 16px; font-weight: bold; text-align: center;"></div>
-        <div id="driverInfo" style="font-size: 16px; font-weight: bold; text-align: center;"></div>
-    </div>
-
-    <!-- Dynamic Map Display -->
-    <div style="width: 55%;" id="mapContainer">
-        <p style="text-align: center; font-size: 18px;">Select a pickup and dropoff location to view the route.</p>
     </div>
 </div>
-
-<script>
-    function updateMap() {
-        const pickup = document.getElementById("pickupLocation").value;
-        const dropoff = document.getElementById("dropoffLocation").value;
-        const rideType = document.getElementById("rideType").value;
-        const mapContainer = document.getElementById("mapContainer");
-        const fareInfo = document.getElementById("fareInfo");
-        const distanceInfo = document.getElementById("distanceInfo");
-        const driverInfo = document.getElementById("driverInfo");
-
-        if (pickup === dropoff) {
-            mapContainer.innerHTML = "<p style='color: red; font-size: 18px; text-align: center;'><strong>Choose a different dropoff or pickup location.</strong></p>";
-            fareInfo.innerHTML = "";
-            distanceInfo.innerHTML = "";
-            driverInfo.innerHTML = "";
-            return;
-        }
-
-        const maps = {
-            "Cross Roads-Downtown": "https://www.google.com/maps/d/u/0/embed?mid=1ithvLsSqcME1pVFTSnOBB9NKoBXUP5s",
-            "Downtown-Cross Roads": "https://www.google.com/maps/d/u/0/embed?mid=1ekF_QApD7rnUKPT-NBuhjz5iOJGyUfk",
-            "Cross Roads-Halfway Tree": "https://www.google.com/maps/d/u/0/embed?mid=1U-2w33rEnFIWxTDKYnNFp8DINCHxPAA",
-            "Halfway Tree-Cross Roads": "https://www.google.com/maps/d/u/0/embed?mid=1ufnHhXP8vWyBxAoTJRvXU1XO9IZhfx0",
-            "Downtown-Halfway Tree": "https://www.google.com/maps/d/u/0/embed?mid=1ujhY3CsfTc_6tEYDx0bWSWLKZVUIA0w",
-            "Halfway Tree-Downtown": "https://www.google.com/maps/d/u/0/embed?mid=1ufnHhXP8vWyBxAoTJRvXU1XO9IZhfx0"
-        };
-
-        const faresAndDistances = {
-            "Cross Roads-Halfway Tree": { distance: 2.3, fare: 600 },
-            "Halfway Tree-Cross Roads": { distance: 2.3, fare: 600 },
-            "Cross Roads-Downtown": { distance: 3.6, fare: 600 },
-            "Downtown-Cross Roads": { distance: 3.6, fare: 600 },
-            "Halfway Tree-Downtown": { distance: 5.3, fare: 1000 },
-            "Downtown-Halfway Tree": { distance: 5.3, fare: 1000 }
-        };
-
-        const drivers = [
-            "John Doe - Toyota Prius (⭐4.8)",
-            "Jane Smith - Honda Civic (⭐4.5)",
-            "Mike Brown - Nissan Altima (⭐4.7)"
-        ];
-
-        const routeKey = `${pickup}-${dropoff}`;
-
-        if (maps[routeKey]) {
-            mapContainer.innerHTML = `<iframe src="${maps[routeKey]}" width="600" height="450" style="border:0;" allowfullscreen loading="lazy"></iframe>`;
-
-            let baseFare = faresAndDistances[routeKey]?.fare || 0;
-            let distance = faresAndDistances[routeKey]?.distance || "N/A";
-
-            let fare = rideType === "Premium" ? baseFare + 1000 : baseFare;
-
-            fareInfo.innerHTML = `Fare: <strong>$${fare}</strong>`;
-            distanceInfo.innerHTML = `Distance: <strong>${distance} km</strong>`;
-            driverInfo.innerHTML = `Recommended Driver: <strong>${drivers[Math.floor(Math.random() * drivers.length)]}</strong>`;
-        } else {
-            mapContainer.innerHTML = "<p style='text-align: center; font-size: 18px;'><strong>No map available for this route.</strong></p>";
-            fareInfo.innerHTML = "";
-            distanceInfo.innerHTML = "";
-            driverInfo.innerHTML = "";
-        }
-    }
-</script>

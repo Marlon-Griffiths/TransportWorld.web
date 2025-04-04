@@ -1,0 +1,29 @@
+﻿@model TransportWorldSystem.Web.Models.RideRequestModel
+
+<div style="margin-bottom: 10px;">
+    <a href="@Url.Action("Index", "Home")" class="btn btn-secondary">← Back</a>
+</div>
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+    <div style="width: 40%; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+        <h3>Recommended Driver</h3>
+        <img src="@Model.DriverImageUrl" alt="Driver Image" style="width: 150px; border-radius: 8px; margin-bottom: 10px;" />
+        <p><strong>@Model.DriverName</strong></p>
+        <p>Fare: <strong>$@Model.Fare</strong></p>
+        <p>Distance: <strong>@Model.Distance km</strong></p>
+        <p>Estimated Time: <strong>@Model.EstimatedTime mins</strong></p>
+
+        <form method="post" asp-action="ChangeDriver">
+            <input type="hidden" name="PickupLocation" value="@Model.PickupLocation" />
+            <input type="hidden" name="DropoffLocation" value="@Model.DropoffLocation" />
+            <input type="hidden" name="RideType" value="@Model.RideType" />
+            <input type="hidden" name="DriverName" value="@Model.DriverName" />
+            <button class="btn btn-warning mt-2" type="submit">Change Driver</button>
+        </form>
+    </div>
+
+    <div style="width: 55%;">
+        <iframe src="@ViewBag.MapUrl" width="600" height="450" style="border:0;" allowfullscreen loading="lazy"></iframe>
+    </div>
+</div>
+

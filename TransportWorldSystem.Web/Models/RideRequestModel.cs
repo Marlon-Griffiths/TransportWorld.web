@@ -1,19 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace TransportWorldSystem.Web.Models
+﻿namespace TransportWorldSystem.Web.Models
 {
     public class RideRequestModel
     {
-        [Required]
         public string PickupLocation { get; set; }
-
-        [Required]
         public string DropoffLocation { get; set; }
-
-        [Required]
-        public string RideType { get; set; } // "Normal" or "Premium"
-
+        public string RideType { get; set; }
         public double Distance { get; set; }
         public double Fare { get; set; }
+        public double EstimatedTime { get; set; }
+        public string DriverName { get; set; }
+        public string DriverImageUrl { get; set; }
     }
 }

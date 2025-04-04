@@ -1,73 +1,109 @@
-﻿using System.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Mvc;
 using TransportWorldSystem.Web.Models;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace TransportWorldSystem.Web.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
+        private static readonly Dictionary<string, (double Distance, double Fare)> _routes = new()
         {
-            _logger = logger;
-        }
+            { "Cross Roads-Halfway Tree", (2.3, 600) },
+            { "Halfway Tree-Cross Roads", (2.3, 600) },
+            { "Cross Roads-Downtown", (3.6, 600) },
+            { "Downtown-Cross Roads", (3.6, 600) },
+            { "Halfway Tree-Downtown", (5.3, 1000) },
+            { "Downtown-Halfway Tree", (5.3, 1000) }
+        };
+
+        private static readonly List<string> _drivers = new()
+        {
+            "John Doe - Toyota Prius (⭐4.8)",
+            "Jane Smith - Honda Civic (⭐4.5)",
+            "Mike Brown - Nissan Altima (⭐4.7)"
+        };
+
+        private static readonly Dictionary<string, string> _maps = new()
+        {
+            { "Cross Roads-Downtown", "https://www.google.com/maps/d/u/0/embed?mid=1ithvLsSqcME1pVFTSnOBB9NKoBXUP5s" },
+            { "Downtown-Cross Roads", "https://www.google.com/maps/d/u/0/embed?mid=1ekF_QApD7rnUKPT-NBuhjz5iOJGyUfk" },
+            { "Cross Roads-Halfway Tree", "https://www.google.com/maps/d/u/0/embed?mid=1U-2w33rEnFIWxTDKYnNFp8DINCHxPAA" },
+            { "Halfway Tree-Cross Roads", "https://www.google.com/maps/d/u/0/embed?mid=1mStHdz32nea3Xxh0HSd1aGXJHoopRZU" },
+            { "Downtown-Halfway Tree", "https://www.google.com/maps/d/u/0/embed?mid=1ujhY3CsfTc_6tEYDx0bWSWLKZVUIA0w" },
+            { "Halfway Tree-Downtown", "https://www.google.com/maps/d/u/0/embed?mid=1ufnHhXP8vWyBxAoTJRvXU1XO9IZhfx0" }
+        };
 
         public IActionResult Index()
         {
             return View();
         }
 
-        public IActionResult Privacy()
+        [HttpPost]
+        public IActionResult RequestRide(RideRequestModel request)
         {
-            return View();
+            if (string.IsNullOrEmpty(request.PickupLocation) || string.IsNullOrEmpty(request.DropoffLocation))
+            {
+                ViewBag.ErrorMessage = "Please select valid locations.";
+                return View("Index");
+            }
+
+            if (request.PickupLocation == request.DropoffLocation)
+            {
+                ViewBag.ErrorMessage = "Choose a different dropoff or pickup location.";
+                return View("Index");
+            }
+
+            string routeKey = $"{request.PickupLocation}-{request.DropoffLocation}";
+
+            if (_routes.TryGetValue(routeKey, out var info))
+            {
+                request.Distance = info.Distance;
+                request.Fare = request.RideType == "Premium" ? info.Fare + 1000 : info.Fare;
+                request.EstimatedTime = Math.Round(info.Distance / 30.0 * 60); // 30 km/h average speed
+
+                string driver = _drivers[new Random().Next(_drivers.Count)];
+                request.DriverName = driver;
+                request.DriverImageUrl = GetDriverImage(driver);
+
+                ViewBag.MapUrl = _maps[routeKey];
+                return View("RideDetails", request);
+            }
+
+            ViewBag.ErrorMessage = "No route available for this selection.";
+            return View("Index");
         }
 
         [HttpPost]
-        public IActionResult RequestRide(RideRequestModel model)
+        public IActionResult ChangeDriver(RideRequestModel request)
         {
-            if (!ModelState.IsValid)
+            string routeKey = $"{request.PickupLocation}-{request.DropoffLocation}";
+            if (_routes.TryGetValue(routeKey, out var info))
             {
-                TempData["Error"] = "Invalid input. Please fill out all fields.";
-                return RedirectToAction("Index");
+                request.Distance = info.Distance;
+                request.Fare = request.RideType == "Premium" ? info.Fare + 1000 : info.Fare;
+                request.EstimatedTime = Math.Round(info.Distance / 30.0 * 60);
+
+                var availableDrivers = _drivers.Where(d => d != request.DriverName).ToList();
+                string newDriver = availableDrivers[new Random().Next(availableDrivers.Count)];
+
+                request.DriverName = newDriver;
+                request.DriverImageUrl = GetDriverImage(newDriver);
+                ViewBag.MapUrl = _maps[routeKey];
+
+                return View("RideDetails", request);
             }
 
-            // Define fares & distances
-            var faresAndDistances = new Dictionary<string, (double Distance, double Fare)>
-            {
-                { "Cross Roads-Halfway Tree", (2.3, 600) },
-                { "Halfway Tree-Cross Roads", (2.3, 600) },
-                { "Cross Roads-Downtown", (3.6, 600) },
-                { "Downtown-Cross Roads", (3.6, 600) },
-                { "Halfway Tree-Downtown", (5.3, 1000) },
-                { "Downtown-Halfway Tree", (5.3, 1000) }
-            };
-
-            string routeKey = $"{model.PickupLocation}-{model.DropoffLocation}";
-
-            if (faresAndDistances.ContainsKey(routeKey))
-            {
-                model.Distance = faresAndDistances[routeKey].Distance;
-                model.Fare = model.RideType == "Premium" ? faresAndDistances[routeKey].Fare + 1000 : faresAndDistances[routeKey].Fare;
-            }
-            else
-            {
-                TempData["Error"] = "Invalid ride selection.";
-                return RedirectToAction("Index");
-            }
-
-            _logger.LogInformation($"Ride requested: {model.PickupLocation} → {model.DropoffLocation}, Type: {model.RideType}, Fare: ${model.Fare}, Distance: {model.Distance} km.");
-
-            TempData["Message"] = $"Ride requested successfully from {model.PickupLocation} to {model.DropoffLocation}.";
-            return RedirectToAction("Index");
+            ViewBag.ErrorMessage = "Unable to change driver.";
+            return View("Index");
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        private string GetDriverImage(string driverName)
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            if (driverName.Contains("John")) return "/images/john.jpg";
+            if (driverName.Contains("Jane")) return "/images/jane.jpg";
+            return "/images/mike.jpg";
         }
     }
 }
