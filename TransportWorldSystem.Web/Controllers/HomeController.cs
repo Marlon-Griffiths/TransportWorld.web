@@ -50,6 +50,10 @@ namespace TransportWorldSystem.Web.Controllers
         {
             return View();
         }
+        public IActionResult Privacy()
+        {
+            return View();
+        }
 
         // 🚕 Ride request handler
         [HttpPost]
@@ -119,11 +123,11 @@ namespace TransportWorldSystem.Web.Controllers
             return View("Index");
         }
 
-        // 📦 Show loading animation (handled in the view)
+        // Show loading animation (handled in the view)
         [HttpPost]
         public IActionResult RequestSent(RideRequestModel request)
         {
-            // 🔄 The view should show a loading animation and auto-redirect after a delay
+            // The view should show a loading animation and auto-redirect after a delay
             return View("RequestSent", request);
         }
 
