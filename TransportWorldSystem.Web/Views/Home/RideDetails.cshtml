@@ -1,29 +1,127 @@
 ﻿@model TransportWorldSystem.Web.Models.RideRequestModel
 
-<div style="margin-bottom: 10px;">
-    <a href="@Url.Action("Index", "Home")" class="btn btn-secondary">← Back</a>
-</div>
+@{
+    ViewData["Title"] = "Ride Details";
+}
 
-<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-    <div style="width: 40%; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
-        <h3>Recommended Driver</h3>
-        <img src="@Model.DriverImageUrl" alt="Driver Image" style="width: 150px; border-radius: 8px; margin-bottom: 10px;" />
+<style>
+    .details-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-top: 20px;
+        font-family: Arial, sans-serif;
+    }
+
+    .driver-card {
+        width: 30%;
+        padding: 30px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: rgba(255, 255, 255, 0.95);
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .driver-img {
+        width: 100%;
+        max-width: 180px;
+        height: auto;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+
+    .clock-container {
+        margin: 20px 0;
+        font-size: 18px;
+        font-weight: bold;
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 10px;
+        border-radius: 10px;
+        font-family: 'Courier New', Courier, monospace;
+        box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+        width: fit-content;
+        top: 70px;
+        left: 20px;
+        
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .map-frame {
+        width: 66%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: rgba(255, 255, 255, 0.95);
+        box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.05);
+		height: 491px;
+    }
+    .map-frame iframe {
+        width: 100%;
+        height: 100%;
+        min-height: 400px;
+        border: 0;
+        border-radius: 8px;
+    }
+</style>
+
+<!-- Clock -->
+<div class="clock-container" id="clock"></div>
+
+<div class="details-container">
+    <!-- Left: Driver Info -->
+    <div class="driver-card">
+        <h3>Available Driver</h3>
+
+        <!-- Driver Image -->
+        <img src="@Model.DriverImageUrl" alt="Driver Image" class="driver-img" />
+
+        <!-- Driver Info -->
         <p><strong>@Model.DriverName</strong></p>
         <p>Fare: <strong>$@Model.Fare</strong></p>
         <p>Distance: <strong>@Model.Distance km</strong></p>
-        <p>Estimated Time: <strong>@Model.EstimatedTime mins</strong></p>
+        <p>Driver is <strong id="eta">@Model.EstimatedTime</strong> minutes away</p>
 
-        <form method="post" asp-action="ChangeDriver">
-            <input type="hidden" name="PickupLocation" value="@Model.PickupLocation" />
-            <input type="hidden" name="DropoffLocation" value="@Model.DropoffLocation" />
-            <input type="hidden" name="RideType" value="@Model.RideType" />
-            <input type="hidden" name="DriverName" value="@Model.DriverName" />
-            <button class="btn btn-warning mt-2" type="submit">Change Driver</button>
-        </form>
+        <!-- Action Buttons -->
+        <div class="btn-group mt-3">
+            <form method="post" action="@Url.Action("ChangeDriver", "Home")">
+                <input type="hidden" name="PickupLocation" value="@Model.PickupLocation" />
+                <input type="hidden" name="DropoffLocation" value="@Model.DropoffLocation" />
+                <input type="hidden" name="RideType" value="@Model.RideType" />
+                <button type="submit" class="btn btn-warning">Change Driver</button>
+            </form>
+
+            <form method="post" action="@Url.Action("RequestSent", "Home")">
+                <input type="hidden" name="PickupLocation" value="@Model.PickupLocation" />
+                <input type="hidden" name="DropoffLocation" value="@Model.DropoffLocation" />
+                <input type="hidden" name="RideType" value="@Model.RideType" />
+                <button type="submit" class="btn btn-success">Next</button>
+            </form>
+        </div>
+
+        <a href="@Url.Action("Index", "Home")" class="btn btn-secondary mt-3">Back</a>
     </div>
 
-    <div style="width: 55%;">
-        <iframe src="@ViewBag.MapUrl" width="600" height="450" style="border:0;" allowfullscreen loading="lazy"></iframe>
+    <!-- Right: Map -->
+    <div class="map-frame">
+        <iframe src="@ViewBag.MapUrl" allowfullscreen loading="lazy"></iframe>
     </div>
 </div>
+
+<!-- Real-time Clock + ETA Timer Script -->
+<script>
+    function updateClock() {
+        const clock = document.getElementById("clock");
+        const now = new Date();
+        clock.innerText = "" + now.toLocaleTimeString();
+    }
+
+    updateClock();
+    setInterval(updateClock, 1000);
+</script>
 

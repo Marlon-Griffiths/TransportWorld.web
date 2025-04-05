@@ -1,0 +1,63 @@
+﻿@{
+    ViewData["Title"] = "Request Accepted";
+}
+
+<style>
+    .confirmation-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 90vh;
+        font-family: Arial, sans-serif;
+        text-align: center;
+    }
+
+    .clock-container {
+        position: absolute;
+        top: 70px;
+        left: 20px;
+        font-size: 18px;
+        font-weight: bold;
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 10px;
+        border-radius: 10px;
+        font-family: 'Courier New', Courier, monospace;
+        box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+        width: fit-content;
+    }
+
+    .success-icon {
+        font-size: 70px;
+        color: #28a745;
+        margin-bottom: 20px;
+    }
+
+    .btn-home {
+        margin-top: 20px;
+        font-size: 16px;
+    }
+</style>
+
+<!-- Real-Time Clock -->
+<div class="clock-container" id="clock"></div>
+
+<!-- Confirmation Message -->
+<div class="confirmation-container">
+    <div class="success-icon">✅</div>
+    <h2>Your ride request has been accepted!</h2>
+    <p>Your driver is on the way. You can sit back and relax.</p>
+    <a href="@Url.Action("Index", "Home")" class="btn btn-primary btn-home">Back to Home</a>
+</div>
+
+<script>
+    function updateClock() {
+        const clock = document.getElementById("clock");
+        const now = new Date();
+        clock.innerText = now.toLocaleTimeString();
+    }
+
+    updateClock();
+    setInterval(updateClock, 1000);
+</script>

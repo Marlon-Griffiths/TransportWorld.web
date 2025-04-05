@@ -1,0 +1,79 @@
+﻿@{
+    ViewData["Title"] = "Request Sent";
+}
+
+<style>
+    .center-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 90vh;
+        font-family: Arial, sans-serif;
+        text-align: center;
+    }
+
+    .clock-container {
+        position: absolute;
+        top: 70px;
+        left: 20px;
+        font-size: 18px;
+        font-weight: bold;
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 10px;
+        border-radius: 10px;
+        font-family: 'Courier New', Courier, monospace;
+        box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
+        width: fit-content;
+    }
+
+    .spinner {
+        border: 8px solid #f3f3f3;
+        border-top: 8px solid #3498db;
+        border-radius: 50%;
+        width: 80px;
+        height: 80px;
+        animation: spin 1s linear infinite;
+        margin-bottom: 20px;
+    }
+
+    @@keyframes spin {
+        0%
+
+    {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+
+    }
+</style>
+
+<!-- Real-Time Clock -->
+<div class="clock-container" id="clock"></div>
+
+<!-- Loading Spinner and Message -->
+<div class="center-container">
+    <div class="spinner"></div>
+    <h3>Sending your ride request...</h3>
+</div>
+
+<!-- JavaScript: Update Clock & Auto Redirect -->
+<script>
+    function updateClock() {
+        const clock = document.getElementById("clock");
+        const now = new Date();
+        clock.innerText = now.toLocaleTimeString();
+    }
+
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // Auto-redirect to RequestAccepted after 5 seconds
+    setTimeout(function () {
+        window.location.href = "@Url.Action("RequestAccepted", "Home")";
+    }, 5000);
+</script>

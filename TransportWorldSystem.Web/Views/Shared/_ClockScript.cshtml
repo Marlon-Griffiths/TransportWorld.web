@@ -1,0 +1,29 @@
+﻿<div style="font-weight: bold; font-size: 18px;" id="realTimeClock"></div>
+
+@if (ViewBag.DriverETA != null)
+{
+    <div id="etaText" style="margin-top: 5px; color: #555;"></div>
+}
+
+<script>
+    let driverETA = @ViewBag.DriverETA ?? 0;
+
+    function updateClockAndETA() {
+        const now = new Date();
+        const clock = now.toLocaleTimeString();
+        document.getElementById("realTimeClock").innerText = "Time: " + clock;
+
+        if (driverETA > 0) {
+            document.getElementById("etaText").innerText = "Driver is " + driverETA + " minute(s) away";
+            driverETA--;
+        } else if (driverETA === 0 && document.getElementById("etaText")) {
+            document.getElementById("etaText").innerText = "Driver has arrived!";
+        }
+    }
+
+    updateClockAndETA();
+    setInterval(updateClockAndETA, 60000); // Every minute
+    setInterval(() => {
+        document.getElementById("realTimeClock").innerText = new Date().toLocaleTimeString();
+    }, 1000); // Smooth seconds update
+</script>
