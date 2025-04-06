@@ -94,6 +94,7 @@
                 <input type="hidden" name="DropoffLocation" value="@Model.DropoffLocation" />
                 <input type="hidden" name="RideType" value="@Model.RideType" />
                 <button type="submit" class="btn btn-warning">Change Driver</button>
+                <input type="hidden" name="DriverIndex" value="@Model.DriverIndex" />
             </form>
 
             <form method="post" action="@Url.Action("RequestSent", "Home")">

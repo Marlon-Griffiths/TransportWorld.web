@@ -7,7 +7,6 @@ namespace TransportWorldSystem.Web.Controllers
 {
     public class HomeController : Controller
     {
-        // 📍 Define supported routes with their distances and base fares
         private static readonly Dictionary<string, (double Distance, double Fare)> _routes = new()
         {
             { "Cross Roads-Halfway Tree", (2.3, 600) },
@@ -18,7 +17,6 @@ namespace TransportWorldSystem.Web.Controllers
             { "Downtown-Halfway Tree", (5.3, 1000) }
         };
 
-        // 👤 List of available drivers
         private static readonly List<string> _drivers = new()
         {
             "John Doe - Toyota Prius (⭐4.8)",
@@ -26,7 +24,6 @@ namespace TransportWorldSystem.Web.Controllers
             "Mike Brown - Nissan Altima (⭐4.7)"
         };
 
-        // ⏱ Estimated arrival times for each driver
         private static readonly Dictionary<string, int> _driverArrivalTimes = new()
         {
             { "John Doe - Toyota Prius (⭐4.8)", 12 },
@@ -34,7 +31,6 @@ namespace TransportWorldSystem.Web.Controllers
             { "Mike Brown - Nissan Altima (⭐4.7)", 9 }
         };
 
-        // 🗺 Embedded Google Maps links per route
         private static readonly Dictionary<string, string> _maps = new()
         {
             { "Cross Roads-Downtown", "https://www.google.com/maps/d/u/0/embed?mid=1ithvLsSqcME1pVFTSnOBB9NKoBXUP5s&noprof=1" },
@@ -45,17 +41,10 @@ namespace TransportWorldSystem.Web.Controllers
             { "Halfway Tree-Downtown", "https://www.google.com/maps/d/u/0/embed?mid=1ufnHhXP8vWyBxAoTJRvXU1XO9IZhfx0&noprof=1" }
         };
 
-        // 🚪 Landing page
-        public IActionResult Index()
-        {
-            return View();
-        }
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+        public IActionResult Index() => View();
 
-        // 🚕 Ride request handler
+        public IActionResult Privacy() => View();
+
         [HttpPost]
         public IActionResult RequestRide(RideRequestModel request)
         {
@@ -79,12 +68,13 @@ namespace TransportWorldSystem.Web.Controllers
                 request.Distance = distance;
                 request.Fare = request.RideType == "Premium" ? baseFare + 1000 : baseFare;
 
-                // 🧠 Randomly assign a driver
-                Random rnd = new();
-                string selectedDriver = _drivers[rnd.Next(_drivers.Count)];
+                // 🧠 Assign first driver
+                request.DriverIndex = 0;
+                string selectedDriver = _drivers[request.DriverIndex];
+
                 request.DriverName = selectedDriver;
                 request.EstimatedTime = _driverArrivalTimes[selectedDriver];
-                request.DriverImageUrl = GetDriverImage(selectedDriver); // 🖼 Fetch image using helper
+                request.DriverImageUrl = GetDriverImage(selectedDriver);
 
                 ViewBag.MapUrl = _maps[routeKey];
                 return View("RideDetails", request);
@@ -94,7 +84,6 @@ namespace TransportWorldSystem.Web.Controllers
             return View("Index");
         }
 
-        // 🔁 Change assigned driver
         [HttpPost]
         public IActionResult ChangeDriver(RideRequestModel request)
         {
@@ -106,10 +95,9 @@ namespace TransportWorldSystem.Web.Controllers
                 request.Distance = distance;
                 request.Fare = request.RideType == "Premium" ? baseFare + 1000 : baseFare;
 
-                // 🔄 Exclude current driver and choose a new one
-                List<string> availableDrivers = _drivers.FindAll(d => d != request.DriverName);
-                Random rnd = new();
-                string newDriver = availableDrivers[rnd.Next(availableDrivers.Count)];
+                // 🔄 Switch to next driver in sequence
+                request.DriverIndex = (request.DriverIndex + 1) % _drivers.Count;
+                string newDriver = _drivers[request.DriverIndex];
 
                 request.DriverName = newDriver;
                 request.EstimatedTime = _driverArrivalTimes[newDriver];
@@ -123,22 +111,12 @@ namespace TransportWorldSystem.Web.Controllers
             return View("Index");
         }
 
-        // Show loading animation (handled in the view)
         [HttpPost]
-        public IActionResult RequestSent(RideRequestModel request)
-        {
-            // The view should show a loading animation and auto-redirect after a delay
-            return View("RequestSent", request);
-        }
+        public IActionResult RequestSent(RideRequestModel request) => View("RequestSent", request);
 
-        // ✅ Final screen after request is accepted
         [HttpGet]
-        public IActionResult RequestAccepted()
-        {
-            return View();
-        }
+        public IActionResult RequestAccepted() => View();
 
-        // 🔧 Utility: Get image path based on driver name
         private string GetDriverImage(string driverName)
         {
             if (driverName.Contains("John")) return "/images/john.jpg";
