@@ -12,8 +12,6 @@
         public string DriverName { get; set; }
         public string DriverImageUrl { get; set; } // URL to the driver's picture
         public int EstimatedTime { get; set; }     // in minutes
-
-        // 👇 Add this new property to track which driver is currently selected
-        public int DriverIndex { get; set; }
+        public int DriverIndex { get; internal set; }
     }
 }
