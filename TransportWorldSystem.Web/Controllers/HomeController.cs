@@ -68,7 +68,7 @@ namespace TransportWorldSystem.Web.Controllers
                 request.Distance = distance;
                 request.Fare = request.RideType == "Premium" ? baseFare + 1000 : baseFare;
 
-                // 🧠 Assign first driver
+                // Assign first driver
                 request.DriverIndex = 0;
                 string selectedDriver = _drivers[request.DriverIndex];
 
@@ -95,7 +95,7 @@ namespace TransportWorldSystem.Web.Controllers
                 request.Distance = distance;
                 request.Fare = request.RideType == "Premium" ? baseFare + 1000 : baseFare;
 
-                // 🔄 Switch to next driver in sequence
+                // Switch to next driver in sequence
                 request.DriverIndex = (request.DriverIndex + 1) % _drivers.Count;
                 string newDriver = _drivers[request.DriverIndex];
 
