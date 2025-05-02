@@ -2,9 +2,11 @@
 using TransportWorldSystem.Web.Models;
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Authorization;
 
 namespace TransportWorldSystem.Web.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private static readonly Dictionary<string, (double Distance, double Fare)> _routes = new()
