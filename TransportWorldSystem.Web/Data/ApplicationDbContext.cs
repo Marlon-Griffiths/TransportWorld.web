@@ -1,13 +1,15 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace TransportWorldSystem.Web.Data;
-
-public class ApplicationDbContext : IdentityDbContext
+namespace TransportWorldSystem.Web.Data
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options)
+    public class ApplicationDbContext : IdentityDbContext
     {
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options)
+        {
 
+        }
+        public DbSet<Drivers> Drivers { get; set; }
     }
 }
