@@ -7,11 +7,11 @@ namespace TransportWorldSystem.Web.Controllers
     {
         public IActionResult Index()
         {
-            // Sample model data for the About Us page
+            // the About Us page
             var aboutUsModel = new AboutUsViewModel
             {
-                CompanyHistory = "Founded in 2010, Uber transformed the way people move, offering convenient and reliable transportation services globally.",
-                MissionStatement = "To make transportation as reliable as running water, everywhere, for everyone.",
+                CompanyHistory = "Founded in 2025, Transport World has transformed the way people move, offering convenient and reliable transportation services globally.",
+                MissionStatement = "To make transportation as reliable as running water, taking you to a promising future.",
                 CoreValues = new List<string>
                 {
                     "Innovation",
@@ -21,8 +21,8 @@ namespace TransportWorldSystem.Web.Controllers
                 },
                 LeadershipTeam = new List<Leader>
                 {
-                    new Leader { Name = "John Doe", Role = "CEO", Bio = "John has led Uber's growth from a small startup to a global leader in transportation." },
-                    new Leader { Name = "Jane Smith", Role = "COO", Bio = "Jane is responsible for overseeing Uber's global operations and strategy." }
+                    new Leader { Name = "Nolan Brown", Role = "CEO", Bio = "Nolan has led our company growth from a small startup to a global leader in transportation." },
+                    new Leader { Name = "Jane Nite", Role = "COO", Bio = "Jane is responsible for overseeing Uber's global operations and strategy." }
                 }
             };
 
