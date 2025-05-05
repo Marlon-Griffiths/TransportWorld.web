@@ -1,8 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using TransportWorldSystem.Web.Models;
-using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Authorization;
+using TransportWorldSystem.Web.Data;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace TransportWorldSystem.Web.Controllers
 {
@@ -19,20 +23,6 @@ namespace TransportWorldSystem.Web.Controllers
             { "Downtown-Halfway Tree", (5.3, 1000) }
         };
 
-        private static readonly List<string> _drivers = new()
-        {
-            "John Doe - Toyota Prius (⭐4.8)",
-            "Jane Smith - Honda Civic (⭐4.5)",
-            "Mike Brown - Nissan Altima (⭐4.7)"
-        };
-
-        private static readonly Dictionary<string, int> _driverArrivalTimes = new()
-        {
-            { "John Doe - Toyota Prius (⭐4.8)", 12 },
-            { "Jane Smith - Honda Civic (⭐4.5)", 17 },
-            { "Mike Brown - Nissan Altima (⭐4.7)", 9 }
-        };
-
         private static readonly Dictionary<string, string> _maps = new()
         {
             { "Cross Roads-Downtown", "https://www.google.com/maps/d/u/0/embed?mid=1ithvLsSqcME1pVFTSnOBB9NKoBXUP5s&noprof=1" },
@@ -43,12 +33,19 @@ namespace TransportWorldSystem.Web.Controllers
             { "Halfway Tree-Downtown", "https://www.google.com/maps/d/u/0/embed?mid=1ufnHhXP8vWyBxAoTJRvXU1XO9IZhfx0&noprof=1" }
         };
 
+        private readonly ApplicationDbContext _context;
+
+        public HomeController(ApplicationDbContext context)
+        {
+            _context = context;
+        }
+
         public IActionResult Index() => View();
 
         public IActionResult Privacy() => View();
 
         [HttpPost]
-        public IActionResult RequestRide(RideRequestModel request)
+        public async Task<IActionResult> RequestRide(RideRequestModel request)
         {
             if (string.IsNullOrEmpty(request.PickupLocation) || string.IsNullOrEmpty(request.DropoffLocation))
             {
@@ -70,13 +67,20 @@ namespace TransportWorldSystem.Web.Controllers
                 request.Distance = distance;
                 request.Fare = request.RideType == "Premium" ? baseFare + 1000 : baseFare;
 
-                // Assign first driver
-                request.DriverIndex = 0;
-                string selectedDriver = _drivers[request.DriverIndex];
+                var drivers = await _context.Drivers.ToListAsync();
+                if (!drivers.Any())
+                {
+                    ViewBag.ErrorMessage = "No drivers available.";
+                    return View("Index");
+                }
 
-                request.DriverName = selectedDriver;
-                request.EstimatedTime = _driverArrivalTimes[selectedDriver];
-                request.DriverImageUrl = GetDriverImage(selectedDriver);
+                // Random driver selection
+                var random = new Random();
+                request.DriverIndex = random.Next(drivers.Count);
+                var selectedDriver = drivers[request.DriverIndex];
+
+                request.DriverName = selectedDriver.Name;
+                request.DriverImageUrl = selectedDriver.ImageUrl;
 
                 ViewBag.MapUrl = _maps[routeKey];
                 return View("RideDetails", request);
@@ -87,7 +91,7 @@ namespace TransportWorldSystem.Web.Controllers
         }
 
         [HttpPost]
-        public IActionResult ChangeDriver(RideRequestModel request)
+        public async Task<IActionResult> ChangeDriver(RideRequestModel request)
         {
             string routeKey = $"{request.PickupLocation}-{request.DropoffLocation}";
 
@@ -97,13 +101,31 @@ namespace TransportWorldSystem.Web.Controllers
                 request.Distance = distance;
                 request.Fare = request.RideType == "Premium" ? baseFare + 1000 : baseFare;
 
-                // Switch to next driver in sequence
-                request.DriverIndex = (request.DriverIndex + 1) % _drivers.Count;
-                string newDriver = _drivers[request.DriverIndex];
+                var drivers = await _context.Drivers.ToListAsync();
+                if (!drivers.Any())
+                {
+                    ViewBag.ErrorMessage = "No drivers available.";
+                    return View("Index");
+                }
 
-                request.DriverName = newDriver;
-                request.EstimatedTime = _driverArrivalTimes[newDriver];
-                request.DriverImageUrl = GetDriverImage(newDriver);
+                // Select a random driver different from current one
+                var random = new Random();
+                int newIndex = request.DriverIndex;
+
+                if (drivers.Count > 1)
+                {
+                    do
+                    {
+                        newIndex = random.Next(drivers.Count);
+                    }
+                    while (newIndex == request.DriverIndex);
+                }
+
+                request.DriverIndex = newIndex;
+                var newDriver = drivers[request.DriverIndex];
+
+                request.DriverName = newDriver.Name;
+                request.DriverImageUrl = newDriver.ImageUrl;
 
                 ViewBag.MapUrl = _maps[routeKey];
                 return View("RideDetails", request);
@@ -118,12 +140,5 @@ namespace TransportWorldSystem.Web.Controllers
 
         [HttpGet]
         public IActionResult RequestAccepted() => View();
-
-        private string GetDriverImage(string driverName)
-        {
-            if (driverName.Contains("John")) return "/images/john.jpg";
-            if (driverName.Contains("Jane")) return "/images/jane.jpg";
-            return "/images/mike.jpg";
-        }
     }
 }
