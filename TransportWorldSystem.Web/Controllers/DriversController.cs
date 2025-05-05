@@ -53,8 +53,21 @@ namespace TransportWorldSystem.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Rating,VehicleType")] Drivers drivers)
+        public async Task<IActionResult> Create(Drivers drivers, IFormFile ImageFile)
         {
+            if (ImageFile != null && ImageFile.Length > 0)
+            {
+                var fileName = Path.GetFileName(ImageFile.FileName);
+                var filePath = Path.Combine("wwwroot/images", fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await ImageFile.CopyToAsync(stream);
+                }
+
+                drivers.ImageUrl = "/images/" + fileName;
+            }
+
             if (ModelState.IsValid)
             {
                 _context.Add(drivers);
@@ -63,6 +76,7 @@ namespace TransportWorldSystem.Web.Controllers
             }
             return View(drivers);
         }
+
 
         // GET: Drivers/Edit/5
         public async Task<IActionResult> Edit(int? id)
@@ -85,7 +99,7 @@ namespace TransportWorldSystem.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Rating,VehicleType")] Drivers drivers)
+        public async Task<IActionResult> Edit(int id, Drivers drivers, IFormFile ImageFile)
         {
             if (id != drivers.Id)
             {
@@ -96,12 +110,26 @@ namespace TransportWorldSystem.Web.Controllers
             {
                 try
                 {
+                    // If a new image was uploaded
+                    if (ImageFile != null && ImageFile.Length > 0)
+                    {
+                        var fileName = Path.GetFileName(ImageFile.FileName);
+                        var filePath = Path.Combine("wwwroot/images", fileName);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await ImageFile.CopyToAsync(stream);
+                        }
+
+                        drivers.ImageUrl = "/images/" + fileName;
+                    }
+
                     _context.Update(drivers);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!DriversExists(drivers.Id))
+                    if (!_context.Drivers.Any(e => e.Id == drivers.Id))
                     {
                         return NotFound();
                     }
@@ -112,8 +140,10 @@ namespace TransportWorldSystem.Web.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
+
             return View(drivers);
         }
+
 
         // GET: Drivers/Delete/5
         public async Task<IActionResult> Delete(int? id)
